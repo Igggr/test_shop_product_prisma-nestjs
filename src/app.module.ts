@@ -3,6 +3,7 @@ import { ProductModule } from './modules/product/product.module';
 import { StoreModule } from './modules/store/store.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './modules/prisma/prisma.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot(),
     ProductModule,
     StoreModule,
+    PrismaModule,
   ],
   controllers: [],
   providers: [],

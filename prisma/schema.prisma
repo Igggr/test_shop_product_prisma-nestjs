@@ -50,7 +50,7 @@ model Store {
 
 model Price {
   id       Int    @id @default(autoincrement())
-  amount   Int
+  amount   Decimal @db.Money
   currency String
 
   createdAt DateTime @default(now())

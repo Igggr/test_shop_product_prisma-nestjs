@@ -6,17 +6,17 @@ import { Prisma } from '@prisma/client';
 export class CategoryController {
     constructor(private _categoryService: CategoryService) { }
     
-    @Post('/create')
+    @Post('create')
     createCategory(@Body() dto: Omit<Prisma.CategoryCreateInput, 'createdAt' | 'updatedAt'>) {
         return this._categoryService.createCategory(dto)
     }
 
-    @Get('/getCategory/:id')
+    @Get('getCategory/:id')
     getCategory(@Param('id', ParseIntPipe) id: number,) {
         return this._categoryService.getCategory(id);
     }
 
-    @Put('/updateCategory/:id')
+    @Put('updateCategory/:id')
     updateCategory(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: Omit<Prisma.CategoryUpdateInput, "createdAt" | "updatedAt">,
@@ -24,7 +24,7 @@ export class CategoryController {
         return this._categoryService.updateCategory(id, dto)
     }
 
-    @Delete('/delete/:id')
+    @Delete('delete/:id')
     deleteCategory(@Param('id', ParseIntPipe) id: number) {
         return this._categoryService.deleteCategory(id);
     }

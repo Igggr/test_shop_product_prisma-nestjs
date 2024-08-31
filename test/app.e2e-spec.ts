@@ -223,5 +223,24 @@ describe('App (e2e)', () => {
       expect(productAfter[0].price[0].amount.toString()).toBe('1.1');
       expect(productAfter[0].price[1].amount.toString()).toBe('98');
     });
+
+    it('/product/delete (DELETE)', async () => {
+      await prismaClient.product.create({ data: { name: 'Xiaomi 11', description: 'smartphone 64/10 Gb' } });
+      const productsBefore = await prismaClient.product.findMany({});
+      expect(productsBefore).toMatchObject([{
+        name: 'Xiaomi 11',
+        description: 'smartphone 64/10 Gb',
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      }]);
+
+      const { body } = await request(app.getHttpServer())
+        .delete('/product/delete/1')
+        .send({ name: 'wtf', description: 'unknown object without price' })
+        .expect(HttpStatus.OK);
+      
+      const productsAfter = await prismaClient.product.findMany({});
+      expect(productsAfter).toEqual([]);
+    })
   });
 });

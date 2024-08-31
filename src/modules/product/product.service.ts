@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, Product } from '@prisma/client';
 import { omit } from 'src/common/utils';
 import { Currency } from 'src/common/enums';
+import { itxClientDenyList } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class ProductService {
@@ -25,5 +26,9 @@ export class ProductService {
             });
         }
         return product
+    }
+
+    async deleteProduct(productId: number) {
+        return this.prisma.product.delete({ where: { id: productId } });
     }
 }

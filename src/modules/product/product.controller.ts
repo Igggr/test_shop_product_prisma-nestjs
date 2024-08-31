@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { Prisma } from '@prisma/client';
 import { Currency } from 'src/common/enums';
@@ -19,6 +19,15 @@ export class ProductController {
     @Get('getProduct/:id')
     getProduct(@Param('id', ParseIntPipe) id: number) {
         return this._productService.getProduct(id);
+    }
+
+    @Put('updateProduct/:id')
+    updateProduct(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto ,
+    ) {
+        return this._productService.updateProduct(id, dto)
+
     }
 
     @Delete('delete/:id')

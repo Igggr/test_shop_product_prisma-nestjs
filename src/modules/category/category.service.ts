@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Category, Prisma, Product } from '@prisma/client';
+import { pick } from 'src/common/utils';
 
 
 @Injectable()
@@ -17,8 +18,8 @@ export class CategoryService {
         return this.prisma.category.findUniqueOrThrow({ where: { id: categoryId }, include: { products: true } });
     }
 
-    async updateCategory(categoryId: number, data: Omit<Prisma.CategoryUpdateInput, 'createdAt' | 'updatedAt'>) {
-        return this.prisma.category.update({ where: { id: categoryId }, data})
+    async updateCategory(categoryId: number, data: Pick<Prisma.CategoryUpdateInput, 'name'>) {
+        return this.prisma.category.update({ where: { id: categoryId }, data: pick(['name'], data)})
     }
 
     async deleteCategory(categoryId: number): Promise<void> {

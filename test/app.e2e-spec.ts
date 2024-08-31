@@ -63,14 +63,24 @@ describe('App (e2e)', () => {
     });
 
     it('/category/getCategory (GET)', async () => {
-      await prismaClient.category.create({ data: { name: 'clothes' } });
+      const product = await prismaClient.product.create({ data: { name: 'T-shirt', description: 'L size. Blue color' } });
+      await prismaClient.category.create({ data: { name: 'clothes', products: { connect: { id: product.id } } } });
+
       const categoriesBefore = await prismaClient.category.findMany({ include: { products: true } });
       expect(categoriesBefore).toMatchObject([{
         id: 1,
         name: 'clothes',
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
-        products: [],
+        products: [
+          {
+            id: 1,
+            name: 'T-shirt',
+            description: 'L size. Blue color',
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          }
+        ],
       }]);
 
       const { body } = await request(app.getHttpServer())
@@ -82,6 +92,15 @@ describe('App (e2e)', () => {
         name: "clothes",
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
+        products: [
+          {
+            id: 1,
+            name: 'T-shirt',
+            description: 'L size. Blue color',
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          }
+        ]
       });
 
       const categoriesAfter = await prismaClient.category.findMany({ include: { products: true } });
@@ -90,34 +109,43 @@ describe('App (e2e)', () => {
         name: 'clothes',
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
-        products: [],
+        products: [
+          {
+            id: 1,
+            name: 'T-shirt',
+            description: 'L size. Blue color',
+            createdAt: expect.any(Date),
+            updatedAt: expect.any(Date),
+          }
+        ],
       }]);
     });
 
     it('/category/updateCategory (PUT)', async () => {
-      await prismaClient.category.create({ data: { name: 'sport' } });
-      const categoriesBefore = await prismaClient.category.findMany({ include: { products: true } });
-      expect(categoriesBefore).toMatchObject([{
+      const category = await prismaClient.category.create({ data: { name: 'sport' } });
+      const categoryBeforeUpdate = await prismaClient.category.findUniqueOrThrow({where: { id: category.id }});
+      expect(categoryBeforeUpdate).toMatchObject({
         id: 1,
         name: 'sport',
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
-        products: [],
-      }]);
+      });
 
       const { body } = await request(app.getHttpServer())
         .put('/category/updateCategory/1')
         .send({ name: 'hobbies' })
         .expect(HttpStatus.OK);
 
-      const categoriesAfter = await prismaClient.category.findMany({ include: { products: true } });
-      expect(categoriesAfter).toMatchObject([{
+      const categoryAfterUpdate = await prismaClient.category.findUniqueOrThrow({ where: { id: category.id } });
+      expect(categoryAfterUpdate).toMatchObject({
         id: 1,
         name: 'hobbies',
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
-        products: [],
-      }]);
+      });
+
+      expect(categoryBeforeUpdate.createdAt).toEqual(categoryAfterUpdate.createdAt);
+      expect(categoryBeforeUpdate.updatedAt).not.toEqual(categoryAfterUpdate.updatedAt);
     });
 
     it('/category/delete (DELETE)', async () => {
@@ -310,6 +338,34 @@ describe('App (e2e)', () => {
           }
         ]
       })
+    })
+
+    it('/product/updateProduct/1 (PUT)', async () => {
+      const product = await prismaClient.product.create({ data: { name: 'Last iphone', description: 'it is last model. buy!!!' } });
+
+      const productBeforeUpdate = await prismaClient.product.findUniqueOrThrow({ where: { id: product.id } });
+      expect(productBeforeUpdate).toMatchObject({
+        id: product.id,
+        name: 'Last iphone',
+        description: 'it is last model. buy!!!',
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date)
+      });
+      const { body } = await request(app.getHttpServer())
+        .put('/product/updateProduct/1')
+        .send({ name: 'Not a last model anymore', description: ':(((' })
+        .expect(HttpStatus.OK);
+
+      const productAfterUpdate = await prismaClient.product.findUniqueOrThrow({ where: { id: product.id } });
+      expect(productAfterUpdate).toMatchObject({
+        name: 'Not a last model anymore',
+        description: ':(((',
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date)
+      });
+
+      expect(productBeforeUpdate.createdAt).toEqual(productAfterUpdate.createdAt);
+      expect(productBeforeUpdate.updatedAt).not.toEqual(productAfterUpdate.updatedAt);
     })
 
     it('/product/delete (DELETE)', async () => {

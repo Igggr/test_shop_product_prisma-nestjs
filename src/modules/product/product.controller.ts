@@ -9,7 +9,7 @@ export class ProductController {
 
     @Post('create')
     async createProduct(
-        @Body() data: Omit<Prisma.ProductCreateInput, 'createdAt' | 'updatedAt' | 'price' | 'categories'> & {
+        @Body() data: Omit<Prisma.ProductCreateInput, 'createdAt' | 'updatedAt' | 'prices' | 'categories'> & {
             prices?: Array<{ currency: Currency, amount: number }>,
         },
     ) {

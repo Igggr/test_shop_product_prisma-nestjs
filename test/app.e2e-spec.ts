@@ -142,40 +142,40 @@ describe('App (e2e)', () => {
   });
 
   describe('productController', () => {
-    it('/product/create (POST) without price', async () => {
+    it('/product/create (POST) without prices', async () => {
       const productBefore = await prismaClient.product.findMany();
       expect(productBefore).toEqual([]);
 
       const { body } = await request(app.getHttpServer())
         .post('/product/create')
-        .send({ name: 'wtf', description: 'unknown object without price' })
+        .send({ name: 'wtf', description: 'unknown object without prices' })
         .expect(HttpStatus.CREATED);
 
 
       expect(body).toMatchObject({
         id: 1,
         name: "wtf",
-        description: 'unknown object without price',
+        description: 'unknown object without prices',
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       });
 
       const productAfter = await prismaClient.product.findMany(
-        { include: { categories: true, storeStocks: true, price: true, warehouseStocks: true } });
+        { include: { categories: true, storeStocks: true, prices: true, warehouseStocks: true } });
       expect(productAfter).toMatchObject([{
         id: 1,
         name: 'wtf',
-        description: 'unknown object without price',
+        description: 'unknown object without prices',
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
         categories: [],
         storeStocks: [],
-        price: [],
+        prices: [],
         warehouseStocks: [],
       }]);
     });
 
-    it('/product/create (POST) with price', async () => {
+    it('/product/create (POST) with prices', async () => {
       const productBefore = await prismaClient.product.findMany();
       expect(productBefore).toEqual([]);
 
@@ -202,7 +202,7 @@ describe('App (e2e)', () => {
       });
 
       const productAfter = await prismaClient.product.findMany(
-        { include: { categories: true, storeStocks: true, price: true, warehouseStocks: true } });
+        { include: { categories: true, storeStocks: true, prices: true, warehouseStocks: true } });
 
       expect(productAfter).toMatchObject([{
         id: 1,
@@ -210,7 +210,7 @@ describe('App (e2e)', () => {
         description: 'yellow fruit',
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
-        price: [
+        prices: [
           {
             currency: Currency.USD,
           },
@@ -223,8 +223,8 @@ describe('App (e2e)', () => {
         warehouseStocks: [],
       }]);
 
-      expect(productAfter[0].price[0].amount.toString()).toBe('1.1');
-      expect(productAfter[0].price[1].amount.toString()).toBe('98');
+      expect(productAfter[0].prices[0].amount.toString()).toBe('1.1');
+      expect(productAfter[0].prices[1].amount.toString()).toBe('98');
     });
 
     it('/product/getProduct/1 (GET)', async () => {
@@ -271,7 +271,7 @@ describe('App (e2e)', () => {
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
         }],
-        price: [
+        prices: [
           {
             currency: Currency.USD,
             amount: '7.5'
@@ -324,7 +324,6 @@ describe('App (e2e)', () => {
 
       const { body } = await request(app.getHttpServer())
         .delete('/product/delete/1')
-        .send({ name: 'wtf', description: 'unknown object without price' })
         .expect(HttpStatus.OK);
       
       const productsAfter = await prismaClient.product.findMany({});

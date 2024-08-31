@@ -10,7 +10,7 @@ export class ProductService {
     constructor(private prisma: PrismaService) { }
 
     async createProduct(
-        data: Omit<Prisma.ProductCreateInput, 'createdAt' | 'updatedAt' | 'price' | 'categories'> &
+        data: Omit<Prisma.ProductCreateInput, 'createdAt' | 'updatedAt' | 'prices' | 'categories'> &
         {
             prices?: Array<{ currency: Currency, amount: number }>,
         },
@@ -31,7 +31,7 @@ export class ProductService {
     async getProduct(productId: number) {
         return this.prisma.product.findUniqueOrThrow({
             where: { id: productId },
-            include: { categories: true, price: true, storeStocks: true, warehouseStocks: true }
+            include: { categories: true, prices: true, storeStocks: true, warehouseStocks: true }
         });
     }
 

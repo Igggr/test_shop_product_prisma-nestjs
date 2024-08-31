@@ -24,7 +24,7 @@ model Product {
   categories      Category[]
   storeStocks     StoreStock[]
   warehouseStocks WarehouseStock[]
-  price           Price[]
+  prices          Price[]
 }
 
 model Category {
@@ -74,6 +74,8 @@ model StoreStock {
 
   product   Product @relation(fields: [productId], references: [id])
   productId Int
+
+  @@unique([productId, storeId])
 }
 
 model WarehouseStock {

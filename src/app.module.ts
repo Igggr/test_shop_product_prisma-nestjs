@@ -8,7 +8,11 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 @Module({
   imports: [
     CategoryModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      envFilePath: process.env.NODE_ENV
+        ? `.env.${process.env.NODE_ENV}`
+        : '.env',
+    }),
     ProductModule,
     StoreModule,
     PrismaModule,

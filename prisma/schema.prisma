@@ -48,6 +48,8 @@ model Store {
   storeStocks StoreStock[]
 }
 
+
+// м.б. нужна связь с магазином? Есть ли смыл в цене вне магазина?
 model Price {
   id       Int    @id @default(autoincrement())
   amount   Decimal @db.Money

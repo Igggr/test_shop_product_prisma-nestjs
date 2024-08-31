@@ -415,5 +415,111 @@ describe('App (e2e)', () => {
       }]);
       
     });
+
+    it('/store/getStore/1', async () => {
+      const store = await prismaClient.store.create({ data: { name: 'store1', location: 'Moscow' } });
+
+      const tShirt = await prismaClient.product.create({ data: { name: 'T-shirt', description: 'L size. Blue color' } });
+      const phone = await prismaClient.product.create({ data: { name: 'Last iphone', description: 'it is last model. buy!!!' } });
+
+      await prismaClient.price.create({ data: { currency: Currency.USD, amount: 7.5, product: { connect: { id: tShirt.id } } } });
+      await prismaClient.price.create({ data: { currency: Currency.RUB, amount: 630, product: { connect: { id: tShirt.id } } } });
+
+      await prismaClient.price.create({ data: { currency: Currency.USD, amount: 800, product: { connect: { id: phone.id } } } });
+      await prismaClient.price.create({ data: { currency: Currency.RUB, amount: 75000, product: { connect: { id: phone.id } } } });
+
+      await prismaClient.storeStock.create({
+        data: {
+          quantity: 23,
+          store: { connect: { id: store.id } },
+          product: { connect: { id: tShirt.id }}
+        }
+      });
+
+      await prismaClient.storeStock.create({
+        data: {
+          quantity: 17,
+          store: { connect: { id: store.id } },
+          product: { connect: { id: phone.id } }
+        }
+      });
+
+
+      const { body } = await request(app.getHttpServer())
+        .get('/store/getStore/1')
+        .expect(HttpStatus.OK);
+
+      expect(body).toMatchObject({
+        id: 1,
+        name: 'store1',
+        location: 'Moscow',
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        storeStocks: [
+          {
+            id: 1,
+            productId: tShirt.id,
+            quantity: 23,
+            storeId: store.id,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+            product: {
+              id: tShirt.id,
+              description: "L size. Blue color",
+              name: "T-shirt",
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+              prices: [
+                {
+                  id: expect.any(Number),
+                  currency: Currency.USD,
+                  amount: '7.5',
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
+                },
+                {
+                  id: expect.any(Number),
+                  currency: Currency.RUB,
+                  amount: '630',
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
+                }
+              ]
+            }
+          },
+          {
+            id: 2,
+            productId: phone.id,
+            quantity: 17,
+            storeId: store.id,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+            product: {
+              id: phone.id,
+              name: 'Last iphone',
+              description: 'it is last model. buy!!!',
+              createdAt: expect.any(String),
+              updatedAt: expect.any(String),
+              prices: [
+                {
+                  id: expect.any(Number),
+                  amount: '800',
+                  currency: Currency.USD,
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
+                },
+                {
+                  id: expect.any(Number),
+                  amount: '75000',
+                  currency: Currency.RUB,
+                  createdAt: expect.any(String),
+                  updatedAt: expect.any(String),
+                }
+              ]
+            }
+          }
+        ]
+      })
+    })
   });
 });

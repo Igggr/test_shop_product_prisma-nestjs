@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { Currency } from 'src/common/enums';
 
 describe('App (e2e)', () => {
@@ -23,6 +23,9 @@ describe('App (e2e)', () => {
     await prismaClient.$executeRaw`TRUNCATE "public"."Product" RESTART IDENTITY CASCADE;`;
     await prismaClient.$executeRaw`TRUNCATE "public"."Category" RESTART IDENTITY CASCADE;`;
     await prismaClient.$executeRaw`TRUNCATE "public"."Price" RESTART IDENTITY CASCADE;`;
+    await prismaClient.$executeRaw`TRUNCATE "public"."StoreStock" RESTART IDENTITY CASCADE;`;
+    await prismaClient.$executeRaw`TRUNCATE "public"."Store" RESTART IDENTITY CASCADE;`;
+    await prismaClient.$executeRaw`TRUNCATE "public"."WarehouseStock" RESTART IDENTITY CASCADE;`;
   });
 
   afterAll(async () => {
@@ -223,6 +226,91 @@ describe('App (e2e)', () => {
       expect(productAfter[0].price[0].amount.toString()).toBe('1.1');
       expect(productAfter[0].price[1].amount.toString()).toBe('98');
     });
+
+    it('/product/getProduct/1 (GET)', async () => {
+      const product = await prismaClient.product.create({ data: { name: 'T-shirt', description: 'L size. Blue color' } });
+      await prismaClient.category.create({ data: { name: 'clothes', products: { connect: { id: product.id } } } });
+
+      await prismaClient.price.create({ data: { currency: Currency.USD, amount: 7.5, product: { connect: { id: product.id } } } });
+      await prismaClient.price.create({ data: { currency: Currency.RUB, amount: 630, product: { connect: { id: product.id } } } });
+
+      await prismaClient.warehouseStock.create({ data: { quantity: 12, product: { connect: { id: product.id } } } });
+      await prismaClient.warehouseStock.create({ data: { quantity: 31, product: { connect: { id: product.id } } } });
+
+      const store1 = await prismaClient.store.create({ data: { name: 'store 1', location: 'Moscow' } });
+      const store2 = await prismaClient.store.create({ data: { name: 'store 2', location: 'Spb' } });
+
+      await prismaClient.storeStock.create({
+        data: {
+          quantity: 62,
+          store: { connect: { id: store1.id } },
+          product: { connect: { id: product.id } }
+        }
+      });
+
+      await prismaClient.storeStock.create({
+        data: {
+          quantity: 104,
+          store: { connect: { id: store2.id } },
+          product: { connect: { id: product.id } }
+        }
+      })
+
+      const { body } = await request(app.getHttpServer())
+        .get('/product/getProduct/1')
+        .expect(HttpStatus.OK);
+      
+      expect(body).toMatchObject({
+        name: 'T-shirt',
+        description: 'L size. Blue color',
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        categories: [{
+          id: 1,
+          name: 'clothes',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+        }],
+        price: [
+          {
+            currency: Currency.USD,
+            amount: '7.5'
+          },
+          {
+            currency: Currency.RUB,
+            amount: '630'
+          },
+        ],
+        warehouseStocks: [
+          {
+            quantity: 12,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          },
+          {
+            quantity: 31,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          },
+        ],
+        storeStocks: [
+          {
+            id: 1,
+            storeId: store1.id,
+            quantity: 62,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          },
+          {
+            id: 2,
+            storeId: store2.id,
+            quantity: 104,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          }
+        ]
+      })
+    })
 
     it('/product/delete (DELETE)', async () => {
       await prismaClient.product.create({ data: { name: 'Xiaomi 11', description: 'smartphone 64/10 Gb' } });

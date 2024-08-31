@@ -28,6 +28,13 @@ export class ProductService {
         return product
     }
 
+    async getProduct(productId: number) {
+        return this.prisma.product.findUniqueOrThrow({
+            where: { id: productId },
+            include: { categories: true, price: true, storeStocks: true, warehouseStocks: true }
+        });
+    }
+
     async deleteProduct(productId: number) {
         return this.prisma.product.delete({ where: { id: productId } });
     }

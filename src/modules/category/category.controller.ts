@@ -16,7 +16,7 @@ export class CategoryController {
         return this._categoryService.getCategory(id);
     }
 
-    @Put('/update/:id')
+    @Put('/updateCategory/:id')
     updateCategory(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: Omit<Prisma.CategoryUpdateInput, "createdAt" | "updatedAt">,

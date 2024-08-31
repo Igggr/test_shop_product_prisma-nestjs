@@ -386,4 +386,34 @@ describe('App (e2e)', () => {
       expect(productsAfter).toEqual([]);
     })
   });
+
+  describe('storeController', () => {
+    it('/store/create (POST)', async () => {
+      const storesBefore = await prismaClient.store.findMany();
+      expect(storesBefore).toEqual([]);
+
+      const { body } = await request(app.getHttpServer())
+        .post('/store/create')
+        .send({ name: 'store 1', location: 'Moscow' })
+        .expect(HttpStatus.CREATED);
+      
+      expect(body).toMatchObject({
+        id: 1,
+        name: 'store 1',
+        location: 'Moscow',
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      });
+      
+      const storesAfter = await prismaClient.store.findMany();
+      expect(storesAfter).toEqual([{
+        id: 1,
+        name: 'store 1',
+        location: 'Moscow',
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      }]);
+      
+    });
+  });
 });

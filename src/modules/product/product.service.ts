@@ -14,7 +14,7 @@ export class ProductService {
             prices?: Array<{ currency: Currency, amount: number }>,
         },
     ): Promise<Product | null> {
-        const product = await this.prisma.product.create({ data: omit(['storeStocks', 'warehouseStocks', 'prices'], data) });
+        const product = await this.prisma.product.create({ data: omit(['storeStocks', 'warehouseStock', 'prices'], data) });
 
         if (data.prices) {
             await this.prisma.price.createMany({
@@ -30,7 +30,7 @@ export class ProductService {
     async getProduct(productId: number) {
         return this.prisma.product.findUniqueOrThrow({
             where: { id: productId },
-            include: { categories: true, prices: true, storeStocks: true, warehouseStocks: true }
+            include: { categories: true, prices: true, storeStocks: true, warehouseStock: true }
         });
     }
 

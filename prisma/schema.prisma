@@ -23,7 +23,7 @@ model Product {
 
   categories      Category[]
   storeStocks     StoreStock[]
-  warehouseStocks WarehouseStock[]
+  warehouseStock  WarehouseStock?
   prices          Price[]
 }
 
@@ -88,5 +88,5 @@ model WarehouseStock {
   updatedAt DateTime @updatedAt
 
   product   Product @relation(fields: [productId], references: [id])
-  productId Int
+  productId Int @unique 
 }

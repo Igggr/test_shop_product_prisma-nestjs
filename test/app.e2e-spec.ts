@@ -189,7 +189,7 @@ describe('App (e2e)', () => {
       });
 
       const productAfter = await prismaClient.product.findMany(
-        { include: { categories: true, storeStocks: true, prices: true, warehouseStocks: true } });
+        { include: { categories: true, storeStocks: true, prices: true, warehouseStock: true } });
       expect(productAfter).toMatchObject([{
         id: 1,
         name: 'wtf',
@@ -199,7 +199,6 @@ describe('App (e2e)', () => {
         categories: [],
         storeStocks: [],
         prices: [],
-        warehouseStocks: [],
       }]);
     });
 
@@ -230,7 +229,7 @@ describe('App (e2e)', () => {
       });
 
       const productAfter = await prismaClient.product.findMany(
-        { include: { categories: true, storeStocks: true, prices: true, warehouseStocks: true } });
+        { include: { categories: true, storeStocks: true, prices: true, warehouseStock: true } });
 
       expect(productAfter).toMatchObject([{
         id: 1,
@@ -248,7 +247,7 @@ describe('App (e2e)', () => {
         ],
         categories: [],
         storeStocks: [],
-        warehouseStocks: [],
+        warehouseStock: null,
       }]);
 
       expect(productAfter[0].prices[0].amount.toString()).toBe('1.1');
@@ -263,7 +262,6 @@ describe('App (e2e)', () => {
       await prismaClient.price.create({ data: { currency: Currency.RUB, amount: 630, product: { connect: { id: product.id } } } });
 
       await prismaClient.warehouseStock.create({ data: { quantity: 12, product: { connect: { id: product.id } } } });
-      await prismaClient.warehouseStock.create({ data: { quantity: 31, product: { connect: { id: product.id } } } });
 
       const store1 = await prismaClient.store.create({ data: { name: 'store 1', location: 'Moscow' } });
       const store2 = await prismaClient.store.create({ data: { name: 'store 2', location: 'Spb' } });
@@ -309,18 +307,12 @@ describe('App (e2e)', () => {
             amount: '630'
           },
         ],
-        warehouseStocks: [
+        warehouseStock:
           {
             quantity: 12,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
           },
-          {
-            quantity: 31,
-            createdAt: expect.any(String),
-            updatedAt: expect.any(String),
-          },
-        ],
         storeStocks: [
           {
             id: 1,
@@ -581,4 +573,52 @@ describe('App (e2e)', () => {
     });
 
   });
+
+  describe('WarehouseController', () => {
+    it('/warehouse/setProductRemainingQuantity (POST) new row', async () => {
+      const tShirt = await prismaClient.product.create({ data: { name: 'T-shirt', description: 'L size. Blue color' } });
+
+      const { body } = await request(app.getHttpServer())
+        .post('/warehouse/setProductRemainingQuantity')
+        .send({ productId: 1, quantity: 20 })
+        .expect(HttpStatus.OK);
+
+      const warehouseStock = await prismaClient.warehouseStock.findFirstOrThrow({ where: { productId: tShirt.id } });
+      expect(warehouseStock).toMatchObject({
+        id: 1,
+        quantity: 20,
+        productId: tShirt.id,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      });
+    });
+
+    it('/warehouse/setProductRemainingQuantity (POST) update existing row', async () => {
+      const tShirt = await prismaClient.product.create({ data: { name: 'T-shirt', description: 'L size. Blue color' } });
+      const warehouseStockBefore = await prismaClient.warehouseStock.create({
+        data: {
+          quantity: 10,
+          productId: tShirt.id,
+        }
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .post('/warehouse/setProductRemainingQuantity')
+        .send({ productId: 1, quantity: 20 })
+        .expect(HttpStatus.OK);
+
+      const warehouseStock = await prismaClient.warehouseStock.findUniqueOrThrow({ where: { id: warehouseStockBefore.id } });
+      expect(warehouseStock).toMatchObject({
+        id: 1,
+        quantity: 20,
+        productId: tShirt.id,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      });
+
+      expect(warehouseStockBefore.createdAt).toEqual(warehouseStock.createdAt);
+      expect(warehouseStockBefore.updatedAt).not.toEqual(warehouseStock.updatedAt);
+    });
+  });
+
 });

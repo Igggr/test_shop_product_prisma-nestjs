@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Category, Prisma, Product } from '@prisma/client';
-import { pick } from 'src/modules/common/utils';
+import { pick } from '../common/utils';
 import { CreateCategoryRequest } from './types';
 
 

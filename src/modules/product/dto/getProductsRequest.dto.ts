@@ -1,4 +1,4 @@
-import { PageableDTO } from "src/modules/common/dto";
+import { PageableDTO } from "../../common/dto";
 import { GetProductsRequest } from "../types/getProductsRequest";
 import { ApiPropertyOptional, PartialType } from "@nestjs/swagger";
 

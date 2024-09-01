@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, Product } from '@prisma/client';
-import { omit, pick } from 'src/modules/common/utils';
-import { Currency } from 'src/modules/common/enums';
+import { pick } from '../common/utils';
 import { CreateProductRequest } from './types/createProductRequest';
 import { GetProductsRequest } from './types/getProductsRequest';
 

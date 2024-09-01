@@ -46,6 +46,12 @@ export class ProductService {
                     }
                     : {}
                 ),
+                ...(data.storeId ? {
+                    storeStocks: {
+                        some: { storeId: data.storeId }
+                    }
+
+                }: {})
 
             }
         });

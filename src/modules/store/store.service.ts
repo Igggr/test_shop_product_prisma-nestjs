@@ -18,4 +18,13 @@ export class StoreService {
             include: { storeStocks: { include: { product: { include: { prices: true } } } } }
         })
     }
+
+    async setProductRemainingQuantity({ productId, storeId, quantity }: { productId: number, storeId: number, quantity: number }) {
+        return this.prisma.storeStock.update({
+            where: {
+                productId_storeId: { storeId, productId },
+            },
+            data: { quantity: quantity }
+        })
+    }
 }

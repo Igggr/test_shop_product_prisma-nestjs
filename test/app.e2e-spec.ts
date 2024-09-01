@@ -416,7 +416,7 @@ describe('App (e2e)', () => {
       
     });
 
-    it('/store/getStore/1', async () => {
+    it('/store/getStore/1 (GET)', async () => {
       const store = await prismaClient.store.create({ data: { name: 'store1', location: 'Moscow' } });
 
       const tShirt = await prismaClient.product.create({ data: { name: 'T-shirt', description: 'L size. Blue color' } });
@@ -521,5 +521,34 @@ describe('App (e2e)', () => {
         ]
       })
     })
+
+    it('/store/setProductRemainingQuantity (PUT)', async () => {
+      const store = await prismaClient.store.create({ data: { name: 'store1', location: 'Moscow' } });
+
+      const tShirt = await prismaClient.product.create({ data: { name: 'T-shirt', description: 'L size. Blue color' } });
+      
+      await prismaClient.storeStock.create({
+        data: {
+          quantity: 45,
+          store: { connect: { id: store.id } },
+          product: { connect: { id: tShirt.id } }
+        }
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .put('/store/setProductRemainingQuantity')
+        .send({ productId: 1, storeId: 1, newQuantity: 42 })
+        .expect(HttpStatus.OK);
+      
+      const storeStock = await prismaClient.storeStock.findUniqueOrThrow({ where: { productId_storeId: { productId: tShirt.id, storeId: store.id } } });
+      expect(storeStock).toMatchObject({
+        id: expect.any(Number),
+        quantity: 45,
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        storeId: store.id,
+        productId: tShirt.id,
+      });
+    });
   });
 });

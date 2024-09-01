@@ -8,7 +8,7 @@ services:
     - "5432:5432"
     volumes:
     # таблицы и их содержимое
-    - ./db_data/real/postgres/:/var/lib/postgresql/data
-    - ./db_data/real/run/postgres.sock:/var/run/postgres/postgres.sock
+    - ./db_data/testing/postgres/:/var/lib/postgresql/data
+    - ./db_data/testing/run/postgres.sock:/var/run/postgres/postgres.sock
     env_file:
-    - docker.db.env
+    - docker.db.testing.env

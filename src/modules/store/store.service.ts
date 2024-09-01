@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { pick } from 'src/common/utils';
+import { Currency } from 'src/common/enums';
 
 @Injectable()
 export class StoreService {
@@ -26,5 +27,24 @@ export class StoreService {
             },
             data: { quantity: quantity }
         })
+    }
+
+    async setProductPrice({ productId, currency, amount }: { productId: number, currency: Currency, amount: number }) {
+        await this.prisma.price.upsert({
+            where: {
+                productId_currency: {
+                    productId,
+                    currency,
+                },
+            },
+            update: {
+                amount: new Prisma.Decimal(amount),
+            },
+            create: {
+                amount: new Prisma.Decimal(amount),
+                currency,
+                productId,
+            },
+        });
     }
 }

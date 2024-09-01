@@ -19,13 +19,13 @@ describe('App (e2e)', () => {
 
     prismaClient = moduleFixture.get<PrismaClient>(PrismaClient);
 
-
-    await prismaClient.$executeRaw`TRUNCATE "public"."Product" RESTART IDENTITY CASCADE;`;
-    await prismaClient.$executeRaw`TRUNCATE "public"."Category" RESTART IDENTITY CASCADE;`;
-    await prismaClient.$executeRaw`TRUNCATE "public"."Price" RESTART IDENTITY CASCADE;`;
+    await prismaClient.$executeRaw`TRUNCATE "public"."_CategoryToProduct" RESTART IDENTITY CASCADE;`;
+    await prismaClient.$executeRaw`TRUNCATE "public"."WarehouseStock" RESTART IDENTITY CASCADE;`;
     await prismaClient.$executeRaw`TRUNCATE "public"."StoreStock" RESTART IDENTITY CASCADE;`;
     await prismaClient.$executeRaw`TRUNCATE "public"."Store" RESTART IDENTITY CASCADE;`;
-    await prismaClient.$executeRaw`TRUNCATE "public"."WarehouseStock" RESTART IDENTITY CASCADE;`;
+    await prismaClient.$executeRaw`TRUNCATE "public"."Category" RESTART IDENTITY CASCADE;`;
+    await prismaClient.$executeRaw`TRUNCATE "public"."Price" RESTART IDENTITY CASCADE;`;
+    await prismaClient.$executeRaw`TRUNCATE "public"."Product" RESTART IDENTITY CASCADE;`;
   });
 
   afterAll(async () => {
@@ -550,5 +550,35 @@ describe('App (e2e)', () => {
         productId: tShirt.id,
       });
     });
+
+    it('/store/setProductPrice (POST) update existing', async () => {
+      const tShirt = await prismaClient.product.create({ data: { name: 'T-shirt', description: 'L size. Blue color' } });
+      await prismaClient.price.create({ data: { currency: Currency.USD, amount: 7.5, product: { connect: { id: tShirt.id } } } });
+
+      const { body } = await request(app.getHttpServer())
+        .post('/store/setProductPrice')
+        .send({ productId: 1, currency: Currency.USD, amount: 10.5 })
+        .expect(HttpStatus.OK);
+      
+      const prices = await prismaClient.price.findMany({ where: { productId: tShirt.id } });
+      expect(prices.length).toBe(1);
+
+      expect(prices[0].amount.toString()).toBe('10.5');
+    });
+
+    it('/store/setProductPrice (POST) add new price', async () => {
+      const tShirt = await prismaClient.product.create({ data: { name: 'T-shirt', description: 'L size. Blue color' } });
+
+      const { body } = await request(app.getHttpServer())
+        .post('/store/setProductPrice')
+        .send({ productId: 1, currency: Currency.USD, amount: 9.5 })
+        .expect(HttpStatus.OK);
+
+      const prices = await prismaClient.price.findMany({ where: { productId: tShirt.id } });
+      expect(prices.length).toBe(1);
+
+      expect(prices[0].amount.toString()).toBe('9.5');
+    });
+
   });
 });

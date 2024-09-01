@@ -4,6 +4,7 @@ import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { CreateProductRequest } from './types/createProductRequest';
 import { CreateProductRequestDTO } from './dto/createProductRequest.dto';
 import { UpdateProductRequestDTO } from './dto/updateProductRequest.dto';
+import { GetProductsRequest } from './types/getProductsRequest';
 
 @ApiTags('product')
 @Controller('product')
@@ -24,6 +25,12 @@ export class ProductController {
     @Get('getProduct/:id')
     getProduct(@Param('id', ParseIntPipe) id: number) {
         return this._productService.getProduct(id);
+    }
+
+    @ApiOperation({ summary: 'Запрос списка продуктов' })
+    @Get('getProducts')
+    getProducts(@Body() dto: GetProductsRequest) {
+        return this._productService.getProducts(dto);
     }
 
     @ApiBody({ type: UpdateProductRequestDTO })

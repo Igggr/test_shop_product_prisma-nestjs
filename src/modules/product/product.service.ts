@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, Product } from '@prisma/client';
-import { omit, pick } from 'src/common/utils';
-import { Currency } from 'src/common/enums';
+import { omit, pick } from 'src/modules/common/utils';
+import { Currency } from 'src/modules/common/enums';
 import { CreateProductRequest } from './types/createProductRequest';
+import { GetProductsRequest } from './types/getProductsRequest';
 
 @Injectable()
 export class ProductService {
@@ -31,6 +32,26 @@ export class ProductService {
             include: { categories: true, prices: true, storeStocks: true, warehouseStock: true }
         });
     }
+
+    async getProducts(data: GetProductsRequest) {
+        const count = await this.prisma.product.count();
+
+        const products = await this.prisma.product.findMany({
+            where: {
+                ...(data.categoryName ?
+                    {
+                        categories: {
+                            some: { name: data.categoryName }
+                        }
+                    }
+                    : {}
+                ),
+
+            }
+        });
+        return products;
+    }
+    
 
     async updateProduct(productId: number, data: Pick<Prisma.ProductUpdateInput, 'name' | 'description'>) {
         return this.prisma.product.update({

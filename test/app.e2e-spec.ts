@@ -3,7 +3,7 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { Prisma, PrismaClient } from '@prisma/client';
-import { Currency } from 'src/common/enums';
+import { Currency } from 'src/modules/common/enums';
 
 describe('App (e2e)', () => {
   let app: INestApplication;
@@ -332,6 +332,99 @@ describe('App (e2e)', () => {
       })
     })
 
+    describe('/product/getProducts (GET)', () => {
+      it('Can filter by category', async () => {
+        const tShirt = await prismaClient.product.create({ data: { name: 'T-shirt', description: 'L size. Blue color' } });
+        const iphone = await prismaClient.product.create({ data: { name: 'Last iphone', description: 'it is last model. buy!!!' } });
+        const xiaomi = await prismaClient.product.create({ data: { name: 'Xiaomi 11', description: 'smartphone 64/10 Gb' } });
+        const huawei = await prismaClient.product.create({ data: { name: 'Huawei 13', description: 'no google services' } });
+
+        await prismaClient.category.create({ data: { name: 'clothes', products: { connect: { id: tShirt.id } } } });
+
+        const phones = await prismaClient.category.create({
+          data: {
+            name: 'phones',
+            products: {
+              connect: [
+                { id: iphone.id },
+                { id: xiaomi.id },
+                { id: huawei.id },
+              ]
+            }
+          }
+        });
+
+        await prismaClient.price.create({ data: { currency: Currency.USD, amount: 7.5, product: { connect: { id: tShirt.id } } } });
+        await prismaClient.price.create({ data: { currency: Currency.RUB, amount: 630, product: { connect: { id: tShirt.id } } } });
+
+        await prismaClient.warehouseStock.create({ data: { quantity: 12, product: { connect: { id: tShirt.id } } } });
+        await prismaClient.warehouseStock.create({ data: { quantity: 28, product: { connect: { id: iphone.id } } } });
+        await prismaClient.warehouseStock.create({ data: { quantity: 30, product: { connect: { id: xiaomi.id } } } });
+        await prismaClient.warehouseStock.create({ data: { quantity: 16, product: { connect: { id: huawei.id } } } });
+
+        const store1 = await prismaClient.store.create({ data: { name: 'store 1', location: 'Moscow' } });
+        const store2 = await prismaClient.store.create({ data: { name: 'store 2', location: 'Spb' } });
+        const store3 = await prismaClient.store.create({ data: { name: 'store 3', location: 'Kazan' } });
+
+        await prismaClient.storeStock.create({
+          data: {
+            quantity: 62,
+            store: { connect: { id: store1.id } },
+            product: { connect: { id: tShirt.id } }
+          }
+        });
+
+        await prismaClient.storeStock.create({
+          data: {
+            quantity: 104,
+            store: { connect: { id: store2.id } },
+            product: { connect: { id: tShirt.id } }
+          }
+        });
+
+        await prismaClient.storeStock.create({
+          data: {
+            quantity: 12,
+            store: { connect: { id: store1.id } },
+            product: { connect: { id: iphone.id } }
+          }
+        });
+
+        await prismaClient.storeStock.create({
+          data: {
+            quantity: 28,
+            store: { connect: { id: store3.id } },
+            product: { connect: { id: iphone.id } }
+          }
+        });
+
+        await prismaClient.storeStock.create({
+          data: {
+            quantity: 64,
+            store: { connect: { id: store2.id } },
+            product: { connect: { id: huawei.id } }
+          }
+        });
+
+        const { body } = await request(app.getHttpServer())
+          .get('/product/getProducts')
+          .send({ categoryName: phones.name })
+          .expect(HttpStatus.OK);
+
+        expect(body).toMatchObject([
+          {
+            name: 'Last iphone'
+          },
+          {
+            name: 'Xiaomi 11'
+          },
+          {
+            name: 'Huawei 13',
+          }
+        ])
+      });
+    });
+
     it('/product/updateProduct/1 (PUT)', async () => {
       const product = await prismaClient.product.create({ data: { name: 'Last iphone', description: 'it is last model. buy!!!' } });
 
@@ -435,7 +528,6 @@ describe('App (e2e)', () => {
           product: { connect: { id: phone.id } }
         }
       });
-
 
       const { body } = await request(app.getHttpServer())
         .get('/store/getStore/1')

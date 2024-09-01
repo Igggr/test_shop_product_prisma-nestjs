@@ -1,4 +1,4 @@
-import { Currency } from "src/common/enums"
+import { Currency } from "src/modules/common/enums"
 
 export type SetProductPriceRequest = {
     productId: number,

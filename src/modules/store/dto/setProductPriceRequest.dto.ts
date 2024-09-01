@@ -1,7 +1,7 @@
 import { ApiProperty, PickType } from "@nestjs/swagger";
 import { SetProductPriceRequest } from "../types";
 import { SetProductRemainingQuantityRequestDTO } from "./setProductRemainingQunatityRequestRequest.dto";
-import { Currency } from "src/common/enums";
+import { Currency } from "src/modules/common/enums";
 
 export class SetProductPriceRequestDTO
     extends PickType(SetProductRemainingQuantityRequestDTO, ['productId'])

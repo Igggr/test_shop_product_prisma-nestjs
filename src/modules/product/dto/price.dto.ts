@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Currency } from "src/common/enums";
+import { Currency } from "src/modules/common/enums";
 
 export class PriceDTO {
     @ApiProperty({ example: Currency.USD})

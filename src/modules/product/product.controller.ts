@@ -5,6 +5,7 @@ import { CreateProductRequest } from './types/createProductRequest';
 import { CreateProductRequestDTO } from './dto/createProductRequest.dto';
 import { UpdateProductRequestDTO } from './dto/updateProductRequest.dto';
 import { GetProductsRequest } from './types/getProductsRequest';
+import { GetProductsRequestDTO } from './dto';
 
 @ApiTags('product')
 @Controller('product')
@@ -27,6 +28,7 @@ export class ProductController {
         return this._productService.getProduct(id);
     }
 
+    @ApiBody({type: GetProductsRequestDTO})
     @ApiOperation({ summary: 'Запрос списка продуктов' })
     @Get('getProducts')
     getProducts(@Body() dto: GetProductsRequest) {

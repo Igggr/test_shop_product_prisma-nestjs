@@ -1,10 +1,10 @@
-import { ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { PageableDto } from "../types/pageable";
 
 export class PageableDTO implements PageableDto {
-    @ApiPropertyOptional({example: 0})
+    @ApiProperty({example: 0})
     skip: number;
 
-    @ApiPropertyOptional({example: 10})
+    @ApiProperty({example: 10})
     take: number;
 }

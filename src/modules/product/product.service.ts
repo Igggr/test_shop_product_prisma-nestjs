@@ -34,6 +34,8 @@ export class ProductService {
     }
 
     async getProducts(data: GetProductsRequest) {
+        const pagination = pick(['skip', 'take'], data);;
+
         const where = {
             ...(data.categoryName ?
                 {
@@ -54,6 +56,7 @@ export class ProductService {
         const count = await this.prisma.product.count({where});
         const products = await this.prisma.product.findMany({
             where,
+            ...pagination,
         });
         return { totalAmount: count, data: products };
     }

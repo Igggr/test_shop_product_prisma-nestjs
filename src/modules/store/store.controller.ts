@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { StoreService } from './store.service';
-import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { CreateStoreRequestDTO } from './dto';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CreateStoreRequestDTO, GetStoreResponseDTO, StoreDTO } from './dto';
 import { SetProductPriceRequest, SetProductRemainingQuantityRequest } from './types';
 import { SetProductRemainingQuantityRequestDTO } from './dto/setProductRemainingQunatityRequestRequest.dto';
 import { SetProductPriceRequestDTO } from './dto/setProductPriceRequest.dto';
@@ -11,6 +11,7 @@ import { SetProductPriceRequestDTO } from './dto/setProductPriceRequest.dto';
 export class StoreController {
     constructor(private _storeService: StoreService) { }
     
+    @ApiResponse({type: StoreDTO })
     @ApiBody({ type: CreateStoreRequestDTO })
     @ApiOperation({ summary: 'Создание магазина' })
     @Post('create')
@@ -18,6 +19,7 @@ export class StoreController {
         return this._storeService.createStore(dto);
     }
 
+    @ApiResponse({ type: GetStoreResponseDTO })
     @ApiParam({ name: 'id', example: 1, description: 'Id магазина' })
     @ApiOperation({ summary: 'Получение информации о магазине по id' })
     @Get('getStore/:id')

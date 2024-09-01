@@ -34,28 +34,28 @@ export class ProductService {
     }
 
     async getProducts(data: GetProductsRequest) {
-        const count = await this.prisma.product.count();
+        const where = {
+            ...(data.categoryName ?
+                {
+                    categories: {
+                        some: { name: data.categoryName }
+                    }
+                }
+                : {}
+            ),
+            ...(data.storeId ? {
+                storeStocks: {
+                    some: { storeId: data.storeId }
+                }
 
+            } : {})
+
+        }
+        const count = await this.prisma.product.count({where});
         const products = await this.prisma.product.findMany({
-            where: {
-                ...(data.categoryName ?
-                    {
-                        categories: {
-                            some: { name: data.categoryName }
-                        }
-                    }
-                    : {}
-                ),
-                ...(data.storeId ? {
-                    storeStocks: {
-                        some: { storeId: data.storeId }
-                    }
-
-                }: {})
-
-            }
+            where,
         });
-        return products;
+        return { totalAmount: count, data: products };
     }
     
 

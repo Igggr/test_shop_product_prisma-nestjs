@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Category, Prisma, Product } from '@prisma/client';
 import { pick } from 'src/common/utils';
+import { CreateCategoryRequest } from './types';
 
 
 @Injectable()
@@ -9,7 +10,7 @@ export class CategoryService {
     constructor(private prisma: PrismaService) { }
 
     async createCategory(
-        data: Omit<Prisma.CategoryCreateInput, 'createdAt' | 'updatedAt'>,
+        data: CreateCategoryRequest,
     ): Promise<Category | null> {
         return this.prisma.category.create({ data });
     }

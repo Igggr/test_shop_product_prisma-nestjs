@@ -3,18 +3,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, Product } from '@prisma/client';
 import { omit, pick } from 'src/common/utils';
 import { Currency } from 'src/common/enums';
+import { CreateProductRequest } from './types/createProductRequest';
 
 @Injectable()
 export class ProductService {
     constructor(private prisma: PrismaService) { }
 
     async createProduct(
-        data: Omit<Prisma.ProductCreateInput, 'createdAt' | 'updatedAt' | 'prices' | 'categories'> &
-        {
-            prices?: Array<{ currency: Currency, amount: number }>,
-        },
+        data: CreateProductRequest,
     ): Promise<Product | null> {
-        const product = await this.prisma.product.create({ data: omit(['storeStocks', 'warehouseStock', 'prices'], data) });
+        const product = await this.prisma.product.create({ data: pick(['name', 'description'], data) });
 
         if (data.prices) {
             await this.prisma.price.createMany({

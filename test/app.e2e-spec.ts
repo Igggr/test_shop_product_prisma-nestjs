@@ -332,7 +332,7 @@ describe('App (e2e)', () => {
       })
     })
 
-    describe('/product/getProducts (GET)', () => {
+    describe('/product/getProducts (POST)', () => {
       it('Can get products without filtering', async () => {
         const tShirt = await prismaClient.product.create({ data: { name: 'T-shirt', description: 'L size. Blue color' } });
         const iphone = await prismaClient.product.create({ data: { name: 'Last iphone', description: 'it is last model. buy!!!' } });
@@ -407,7 +407,7 @@ describe('App (e2e)', () => {
         });
 
         const { body } = await request(app.getHttpServer())
-          .get('/product/getProducts')
+          .post('/product/getProducts')
           .send({})
           .expect(HttpStatus.OK);
 
@@ -504,7 +504,7 @@ describe('App (e2e)', () => {
         });
 
         const { body } = await request(app.getHttpServer())
-          .get('/product/getProducts')
+          .post('/product/getProducts')
           .send({ categoryName: phones.name })
           .expect(HttpStatus.OK);
 
@@ -598,7 +598,7 @@ describe('App (e2e)', () => {
         });
 
         const { body } = await request(app.getHttpServer())
-          .get('/product/getProducts')
+          .post('/product/getProducts')
           .send({ storeId: store1.id })
           .expect(HttpStatus.OK);
 
@@ -689,7 +689,7 @@ describe('App (e2e)', () => {
         });
 
         const { body } = await request(app.getHttpServer())
-          .get('/product/getProducts')
+          .post('/product/getProducts')
           .send({ categoryName: phones.name, storeId: store1.id })
           .expect(HttpStatus.OK);
 
@@ -777,7 +777,7 @@ describe('App (e2e)', () => {
         });
 
         const { body } = await request(app.getHttpServer())
-          .get('/product/getProducts')
+          .post('/product/getProducts')
           .send({skip: 1, take: 2})
           .expect(HttpStatus.OK);
 
